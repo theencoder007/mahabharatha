@@ -5,49 +5,64 @@
     <title>Mahabharata: Cosmic Gateway</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Philosopher&display=swap" rel="stylesheet">
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; color: white; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #02010a; color: white; }
         
-        canvas { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; }
-
+        /* 1. Background Image */
         .background-img {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: url('your-image.jpg') no-repeat center center;
-            background-size: cover; z-index: 0; filter: brightness(0.7);
+            background: url('your-image.jpg') no-repeat center center; /* CHANGE THIS TO YOUR IMAGE NAME */
+            background-size: cover; z-index: 0; filter: brightness(0.5);
         }
 
-        /* Interactive Parva Nodes */
+        canvas { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; }
+
+        /* 2. Grid for the 18 Parvas */
+        .parva-grid {
+            position: relative; z-index: 10;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            padding: 100px 50px;
+            height: 80vh;
+            align-content: center;
+        }
+
         .node {
-            position: absolute; z-index: 10; cursor: pointer;
-            text-align: center; transition: transform 0.3s;
-        }
-        .node:hover { transform: scale(1.2); }
-        .node .orb {
-            width: 60px; height: 60px; border-radius: 50%;
-            background: radial-gradient(circle, rgba(255,215,0,0.8) 0%, transparent 70%);
-            box-shadow: 0 0 20px #ffd700; animation: glow 2s infinite alternate;
-        }
-        .node span { 
-            display: block; margin-top: 10px; font-family: 'Cinzel', serif; 
-            text-shadow: 2px 2px 10px #000; color: #ffd700; font-size: 14px;
+            cursor: pointer; text-align: center; transition: all 0.3s ease;
+            display: flex; flex-direction: column; align-items: center;
         }
 
-        /* Error 404 Fix: The Reader Modal */
+        .node:hover { transform: scale(1.15); filter: drop-shadow(0 0 10px #ffd700); }
+
+        .orb {
+            width: 45px; height: 45px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,215,0,0.9) 0%, transparent 70%);
+            box-shadow: 0 0 15px #ffd700; margin-bottom: 8px;
+            animation: breathe 3s infinite alternate;
+        }
+
+        .node span { 
+            font-family: 'Cinzel', serif; color: #f0e68c; font-size: 12px; 
+            text-shadow: 2px 2px 5px #000; letter-spacing: 1px;
+        }
+
+        /* 3. The Reader (Internal Browser) */
         #reader {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 80%; height: 80%; background: rgba(15, 10, 5, 0.95);
+            width: 85%; height: 85%; background: #000;
             border: 2px solid #ffd700; z-index: 100; display: none;
-            padding: 40px; overflow-y: auto; border-radius: 15px;
-            box-shadow: 0 0 50px rgba(0,0,0,1);
+            border-radius: 15px; box-shadow: 0 0 100px rgba(0,0,0,1);
+            overflow: hidden;
         }
-        #reader h2 { font-family: 'Cinzel', serif; color: #ffd700; border-bottom: 1px solid #ffd700; }
-        #reader p { font-family: 'Philosopher', sans-serif; line-height: 1.8; font-size: 1.2rem; }
-        .close-btn { position: absolute; top: 20px; right: 20px; color: #ffd700; cursor: pointer; font-size: 24px; }
 
-        @keyframes glow { from { opacity: 0.5; } to { opacity: 1; } }
+        #storyFrame { width: 100%; height: calc(100% - 40px); border: none; background: white; }
 
-        /* Positioning Nodes - Match these to your cosmos locations */
-        .adi { top: 20%; left: 15%; }
-        .sabha { top: 15%; left: 45%; }
+        .close-btn { 
+            background: #8b4513; color: #ffd700; padding: 5px 20px;
+            font-family: 'Cinzel'; cursor: pointer; text-align: right; display: block;
+        }
+
+        @keyframes breathe { from { transform: scale(0.9); opacity: 0.7; } to { transform: scale(1.1); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -55,88 +70,89 @@
     <div class="background-img"></div>
     <canvas id="cosmicCanvas"></canvas>
 
-    <div class="node adi" onclick="openChapter('Adi Parva', 'The journey begins in the Naimisha forest...')">
-        <div class="orb"></div>
-        <span>Adi Parva</span>
-    </div>
-
-    <div class="node sabha" onclick="openChapter('Sabha Parva', 'The assembly hall and the game of dice...')">
-        <div class="orb"></div>
-        <span>Sabha Parva</span>
-    </div>
+    <div class="parva-grid" id="mainGrid"></div>
 
     <div id="reader">
-        <span class="close-btn" onclick="closeReader()">&times;</span>
-        <h2 id="r-title"></h2>
-        <p id="r-content"></p>
+        <div class="close-btn" onclick="closeReader()">CLOSE X</div>
+        <iframe id="storyFrame" src=""></iframe>
     </div>
 
     <script>
-        // --- COSMIC DUST EFFECT ---
-        const canvas = document.getElementById('cosmicCanvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
+        // Data mapping for all 18 Parvas with their real links
+        const parvaData = [
+            { name: "Adi Parva", link: "https://vyas-mahabharat.com/the-story-begins/" },
+            { name: "Sabha Parva", link: "https://vyas-mahabharat.com/summary-of-the-18-parvas/" }, // Placeholder for now
+            { name: "Vana Parva", link: "https://vyas-mahabharat.com/" },
+            { name: "Virata Parva", link: "https://vyas-mahabharat.com/" },
+            { name: "Udyoga Parva", link: "https://vyas-mahabharat.com/" },
+            { name: "Bhishma Parva", link: "https://vyas-mahabharat.com/" },
+            { name: "Drona Parva", link: "https://vyas-mahabharat.com/" },
+            { name: "Karna Parva", link: "https://vyas-mahabharat.com/" },
+            { name: "Shalya Parva", link: "https://vyas-mahabharat.com/" },
+            { name: "Sauptika Parva", link: "https://vyas-mahabharat.com/" },
+            { name: "Stri Parva", link: "https://vyas-mahabharat.com/" },
+            { name: "Shanti Parva", link: "https://vyas-mahabharat.com/" },
+            { name: "Anushasana Parva", link: "https://vyas-mahabharat.com/" },
+            { name: "Ashvamedhika Parva", link: "https://vyas-mahabharat.com/" },
+            { name: "Ashramavasika Parva", link: "https://vyas-mahabharat.com/" },
+            { name: "Mausala Parva", link: "https://vyas-mahabharat.com/" },
+            { name: "Mahaprasthanika Parva", link: "https://vyas-mahabharat.com/" },
+            { name: "Svargarohana Parva", link: "https://vyas-mahabharat.com/" }
+        ];
 
-        function initCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
+        const grid = document.getElementById('mainGrid');
 
-        class Particle {
-            constructor(x, y) {
-                this.x = x; this.y = y;
-                this.size = Math.random() * 2 + 0.1;
-                this.speedX = Math.random() * 1 - 0.5;
-                this.speedY = Math.random() * 1 - 0.5;
-                this.color = `rgba(255, 215, 0, ${Math.random()})`;
-            }
-            update() {
-                this.x += this.speedX; this.y += this.speedY;
-                if (this.size > 0.1) this.size -= 0.01;
-            }
-            draw() {
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        function handleParticles() {
-            for (let i = 0; i < particles.length; i++) {
-                particles[i].update();
-                particles[i].draw();
-                if (particles[i].size <= 0.1) {
-                    particles.splice(i, 1); i--;
-                }
-            }
-        }
-
-        window.addEventListener('mousemove', (e) => {
-            for (let i = 0; i < 3; i++) {
-                particles.push(new Particle(e.x, e.y));
-            }
+        // Generate the 18 cosmic nodes
+        parvaData.forEach((item) => {
+            const div = document.createElement('div');
+            div.className = 'node';
+            div.onclick = () => openReader(item.link);
+            div.innerHTML = `<div class="orb"></div><span>${item.name}</span>`;
+            grid.appendChild(div);
         });
 
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            handleParticles();
-            requestAnimationFrame(animate);
-        }
-
-        // --- READER LOGIC (404 FIX) ---
-        function openChapter(title, content) {
-            document.getElementById('r-title').innerText = title;
-            document.getElementById('r-content').innerText = content;
+        function openReader(url) {
+            document.getElementById('storyFrame').src = url;
             document.getElementById('reader').style.display = 'block';
         }
 
         function closeReader() {
             document.getElementById('reader').style.display = 'none';
+            document.getElementById('storyFrame').src = "";
         }
 
-        window.addEventListener('resize', initCanvas);
-        initCanvas();
+        // --- COSMIC DUST CANVAS CODE ---
+        const canvas = document.getElementById('cosmicCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        function init() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', init);
+        init();
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x; this.y = y;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = Math.random() * 2 - 1;
+                this.speedY = Math.random() * 2 - 1;
+                this.color = '#ffd700';
+            }
+            update() { this.x += this.speedX; this.y += this.speedY; if(this.size > 0.1) this.size -= 0.05; }
+            draw() { ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI*2); ctx.fill(); }
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            for(let i=0; i<3; i++) particles.push(new Particle(e.x, e.y));
+        });
+
+        function animate() {
+            ctx.clearRect(0,0,canvas.width, canvas.height);
+            particles.forEach((p, i) => {
+                p.update(); p.draw();
+                if(p.size <= 0.1) particles.splice(i, 1);
+            });
+            requestAnimationFrame(animate);
+        }
         animate();
     </script>
 </body>
