@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mahabharata: The Cosmic Gateway</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Philosopher&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: #02010a;
+        }
+
+        /* The Main Background */
+        .portal-bg {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: url('your-photo-name.png') no-repeat center center;
+            background-size: contain; /* Keeps the whole Vishnu image visible */
+            z-index: 1;
+        }
+
+        /* Overlay for Cosmic Depth */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.8) 100%);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Selectable Parva "Cosmos" */
+        .parva-container {
+            position: relative;
+            z-index: 3;
+            width: 100vw; height: 100vh;
+        }
+
+        .parva-node {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* The swirling energy around the parva */
+        .nebula {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,215,0,0.4) 0%, transparent 70%);
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+            animation: pulse 3s infinite alternate;
+        }
+
+        .parva-node:hover .nebula {
+            box-shadow: 0 0 50px #ffd700;
+            transform: scale(1.3) rotate(180deg);
+            background: radial-gradient(circle, rgba(255,215,0,0.8) 0%, transparent 80%);
+        }
+
+        .label {
+            margin-top: 10px;
+            color: #f0e68c;
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            text-shadow: 0 0 10px #000, 0 0 5px #ffd700;
+            letter-spacing: 2px;
+            opacity: 0.8;
+        }
+
+        .parva-node:hover .label {
+            opacity: 1;
+            transform: translateY(-5px);
+            color: #fff;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); filter: brightness(1); }
+            100% { transform: scale(1.1); filter: brightness(1.5); }
+        }
+
+        /* Exact coordinates - adjust these to match your specific image icons */
+        .adi { top: 15%; left: 15%; }
+        .sabha { top: 10%; left: 45%; }
+        .aranya { top: 45%; left: 10%; }
+        .virata { top: 10%; right: 15%; }
+        .udyoga { top: 40%; right: 5%; }
+
+    </style>
+</head>
+<body>
+
+    <div class="portal-bg"></div>
+    <div class="overlay"></div>
+
+    <div class="parva-container">
+        <a href="adiparvan.html" class="parva-node adi">
+            <div class="nebula"></div>
+            <span class="label">Adi Parva</span>
+        </a>
+
+        <a href="sabhaparvan.html" class="parva-node sabha">
+            <div class="nebula"></div>
+            <span class="label">Sabha Parva</span>
+        </a>
+
+        <a href="aranya.html" class="parva-node aranya">
+            <div class="nebula"></div>
+            <span class="label">Aranyaka Parva</span>
+        </a>
+
+        <a href="virata.html" class="parva-node virata">
+            <div class="nebula"></div>
+            <span class="label">Virata Parva</span>
+        </a>
+
+        <a href="udyoga.html" class="parva-node udyoga">
+            <div class="nebula"></div>
+            <span class="label">Udyoga Parva</span>
+        </a>
+    </div>
+
+</body>
+</html>
