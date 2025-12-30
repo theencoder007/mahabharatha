@@ -2,125 +2,142 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Mahabharata: The Cosmic Gateway</title>
+    <title>Mahabharata: Cosmic Gateway</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Philosopher&display=swap" rel="stylesheet">
     <style>
-        body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            overflow: hidden; background-color: #02010a;
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; color: white; }
+        
+        canvas { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; }
+
+        .background-img {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('your-image.jpg') no-repeat center center;
+            background-size: cover; z-index: 0; filter: brightness(0.7);
         }
 
-        /* The Main Background */
-        .portal-bg {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: url('your-photo-name.jpg') no-repeat center center;
-            background-size: contain; /* Keeps the whole Vishnu image visible */
-            z-index: 1;
+        /* Interactive Parva Nodes */
+        .node {
+            position: absolute; z-index: 10; cursor: pointer;
+            text-align: center; transition: transform 0.3s;
+        }
+        .node:hover { transform: scale(1.2); }
+        .node .orb {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,215,0,0.8) 0%, transparent 70%);
+            box-shadow: 0 0 20px #ffd700; animation: glow 2s infinite alternate;
+        }
+        .node span { 
+            display: block; margin-top: 10px; font-family: 'Cinzel', serif; 
+            text-shadow: 2px 2px 10px #000; color: #ffd700; font-size: 14px;
         }
 
-        /* Overlay for Cosmic Depth */
-        .overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.8) 100%);
-            z-index: 2;
-            pointer-events: none;
+        /* Error 404 Fix: The Reader Modal */
+        #reader {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 80%; height: 80%; background: rgba(15, 10, 5, 0.95);
+            border: 2px solid #ffd700; z-index: 100; display: none;
+            padding: 40px; overflow-y: auto; border-radius: 15px;
+            box-shadow: 0 0 50px rgba(0,0,0,1);
         }
+        #reader h2 { font-family: 'Cinzel', serif; color: #ffd700; border-bottom: 1px solid #ffd700; }
+        #reader p { font-family: 'Philosopher', sans-serif; line-height: 1.8; font-size: 1.2rem; }
+        .close-btn { position: absolute; top: 20px; right: 20px; color: #ffd700; cursor: pointer; font-size: 24px; }
 
-        /* Selectable Parva "Cosmos" */
-        .parva-container {
-            position: relative;
-            z-index: 3;
-            width: 100vw; height: 100vh;
-        }
+        @keyframes glow { from { opacity: 0.5; } to { opacity: 1; } }
 
-        .parva-node {
-            position: absolute;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-decoration: none;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* The swirling energy around the parva */
-        .nebula {
-            width: 80px; height: 80px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255,215,0,0.4) 0%, transparent 70%);
-            box-shadow: 0 0 20px rgba(255,255,255,0.2);
-            animation: pulse 3s infinite alternate;
-        }
-
-        .parva-node:hover .nebula {
-            box-shadow: 0 0 50px #ffd700;
-            transform: scale(1.3) rotate(180deg);
-            background: radial-gradient(circle, rgba(255,215,0,0.8) 0%, transparent 80%);
-        }
-
-        .label {
-            margin-top: 10px;
-            color: #f0e68c;
-            font-family: 'Cinzel', serif;
-            font-size: 1.1rem;
-            text-shadow: 0 0 10px #000, 0 0 5px #ffd700;
-            letter-spacing: 2px;
-            opacity: 0.8;
-        }
-
-        .parva-node:hover .label {
-            opacity: 1;
-            transform: translateY(-5px);
-            color: #fff;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); filter: brightness(1); }
-            100% { transform: scale(1.1); filter: brightness(1.5); }
-        }
-
-        /* Exact coordinates - adjust these to match your specific image icons */
-        .adi { top: 15%; left: 15%; }
-        .sabha { top: 10%; left: 45%; }
-        .aranya { top: 45%; left: 10%; }
-        .virata { top: 10%; right: 15%; }
-        .udyoga { top: 40%; right: 5%; }
-
+        /* Positioning Nodes - Match these to your cosmos locations */
+        .adi { top: 20%; left: 15%; }
+        .sabha { top: 15%; left: 45%; }
     </style>
 </head>
 <body>
 
-    <div class="portal-bg"></div>
-    <div class="overlay"></div>
+    <div class="background-img"></div>
+    <canvas id="cosmicCanvas"></canvas>
 
-    <div class="parva-container">
-        <a href="adiparvan.html" class="parva-node adi">
-            <div class="nebula"></div>
-            <span class="label">Adi Parva</span>
-        </a>
-
-        <a href="sabhaparvan.html" class="parva-node sabha">
-            <div class="nebula"></div>
-            <span class="label">Sabha Parva</span>
-        </a>
-
-        <a href="aranya.html" class="parva-node aranya">
-            <div class="nebula"></div>
-            <span class="label">Aranyaka Parva</span>
-        </a>
-
-        <a href="virata.html" class="parva-node virata">
-            <div class="nebula"></div>
-            <span class="label">Virata Parva</span>
-        </a>
-
-        <a href="udyoga.html" class="parva-node udyoga">
-            <div class="nebula"></div>
-            <span class="label">Udyoga Parva</span>
-        </a>
+    <div class="node adi" onclick="openChapter('Adi Parva', 'The journey begins in the Naimisha forest...')">
+        <div class="orb"></div>
+        <span>Adi Parva</span>
     </div>
 
+    <div class="node sabha" onclick="openChapter('Sabha Parva', 'The assembly hall and the game of dice...')">
+        <div class="orb"></div>
+        <span>Sabha Parva</span>
+    </div>
+
+    <div id="reader">
+        <span class="close-btn" onclick="closeReader()">&times;</span>
+        <h2 id="r-title"></h2>
+        <p id="r-content"></p>
+    </div>
+
+    <script>
+        // --- COSMIC DUST EFFECT ---
+        const canvas = document.getElementById('cosmicCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function initCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x; this.y = y;
+                this.size = Math.random() * 2 + 0.1;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * 1 - 0.5;
+                this.color = `rgba(255, 215, 0, ${Math.random()})`;
+            }
+            update() {
+                this.x += this.speedX; this.y += this.speedY;
+                if (this.size > 0.1) this.size -= 0.01;
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function handleParticles() {
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].size <= 0.1) {
+                    particles.splice(i, 1); i--;
+                }
+            }
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            for (let i = 0; i < 3; i++) {
+                particles.push(new Particle(e.x, e.y));
+            }
+        });
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            handleParticles();
+            requestAnimationFrame(animate);
+        }
+
+        // --- READER LOGIC (404 FIX) ---
+        function openChapter(title, content) {
+            document.getElementById('r-title').innerText = title;
+            document.getElementById('r-content').innerText = content;
+            document.getElementById('reader').style.display = 'block';
+        }
+
+        function closeReader() {
+            document.getElementById('reader').style.display = 'none';
+        }
+
+        window.addEventListener('resize', initCanvas);
+        initCanvas();
+        animate();
+    </script>
 </body>
 </html>
