@@ -2,154 +2,363 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Mahabharata: Cosmic Gateway</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Philosopher&display=swap" rel="stylesheet">
+    <title>Mahabharata | Divine Archive</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Philosopher:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #02010a; color: white; }
-        
-        /* 1. Background Image */
-        .background-img {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: url('your-image.jpg') no-repeat center center; /* CHANGE THIS TO YOUR IMAGE NAME */
-            background-size: cover; z-index: 0; filter: brightness(0.5);
+        :root {
+            --gold: #c5a059;
+            --gold-bright: #ffd700;
+            --bg-dark: #02010a;
         }
 
-        canvas { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { width: 100%; height: 100%; background: #000; color: white; overflow: hidden; }
 
-        /* 2. Grid for the 18 Parvas */
-        .parva-grid {
-            position: relative; z-index: 10;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-            padding: 100px 50px;
-            height: 80vh;
-            align-content: center;
+        /* Sequence Screens */
+        #welcome-screen, #mantra-screen {
+            position: fixed; inset: 0; z-index: 200;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: #000; transition: opacity 1.5s ease;
+        }
+	.parva-row.hidden { display: none; }
+        #mantra-screen { display: none; z-index: 199; }
+        .mantra-text {
+            font-family: 'Cinzel'; color: var(--gold); font-size: 2.5rem;
+            letter-spacing: 12px; text-shadow: 0 0 20px var(--gold);
+            animation: pulse 3s infinite ease-in-out;
         }
 
-        .node {
-            cursor: pointer; text-align: center; transition: all 0.3s ease;
+        /* Cosmic Aesthetic Background */
+        .cosmos-bg {
+            position: fixed; inset: 0; z-index: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(70, 0, 150, 0.2) 0%, transparent 60%),
+                radial-gradient(circle at 80% 70%, rgba(0, 50, 120, 0.2) 0%, transparent 60%),
+                url('shri hari.jpg') no-repeat center center;
+            background-size: cover; filter: brightness(0.25) contrast(1.1);
+            opacity: 0; transition: opacity 4s ease;
+        }
+
+        canvas { position: fixed; inset: 0; z-index: 5; pointer-events: none; }
+
+        /* Selection Interface */
+        #main-ui {
+            position: relative; z-index: 10; height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+            opacity: 0; transition: opacity 3s ease;
+            overflow-y: auto; scrollbar-width: none;
+        }
+        #main-ui::-webkit-scrollbar { display: none; }
+
+        .archive-header { padding: 60px 0 30px; text-align: center; }
+        .archive-header h1 { font-family: 'Cinzel'; font-size: 3rem; letter-spacing: 15px; color: var(--gold); }
+
+        .parva-container {
+            display: flex; flex-direction: column; width: 100%; max-width: 800px;
+            padding-bottom: 150px;
+        }
+
+        .parva-row {
+            padding: 25px 40px; cursor: pointer;
+            border-bottom: 1px solid rgba(197, 160, 89, 0.1);
+            transition: all 0.4s ease;
             display: flex; flex-direction: column; align-items: center;
         }
 
-        .node:hover { transform: scale(1.15); filter: drop-shadow(0 0 10px #ffd700); }
-
-        .orb {
-            width: 45px; height: 45px; border-radius: 50%;
-            background: radial-gradient(circle, rgba(255,215,0,0.9) 0%, transparent 70%);
-            box-shadow: 0 0 15px #ffd700; margin-bottom: 8px;
-            animation: breathe 3s infinite alternate;
+        .parva-row:hover {
+            background: radial-gradient(circle, rgba(197, 160, 89, 0.15) 0%, transparent 80%);
+            border-bottom: 1px solid var(--gold-bright);
         }
 
-        .node span { 
-            font-family: 'Cinzel', serif; color: #f0e68c; font-size: 12px; 
-            text-shadow: 2px 2px 5px #000; letter-spacing: 1px;
+        .parva-name {
+            font-family: 'Cinzel'; font-size: 1.6rem; letter-spacing: 4px;
+            color: #ddd; transition: 0.4s;
         }
 
-        /* 3. The Reader (Internal Browser) */
+        .parva-summary {
+            font-family: 'Philosopher'; font-size: 0.9rem; color: var(--gold);
+            opacity: 0.7; margin-top: 8px; letter-spacing: 1px;
+        }
+
+        .parva-row:hover .parva-name { color: #fff; letter-spacing: 6px; text-shadow: 0 0 15px var(--gold-bright); }
+
+        /* Reader */
         #reader {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 85%; height: 85%; background: #000;
-            border: 2px solid #ffd700; z-index: 100; display: none;
-            border-radius: 15px; box-shadow: 0 0 100px rgba(0,0,0,1);
-            overflow: hidden;
+            width: 75%; height: 80%; background: rgba(5, 5, 12, 0.99);
+            border: 1px solid var(--gold); z-index: 300; display: none;
+            padding: 50px; border-radius: 15px; overflow-y: auto;
         }
 
-        #storyFrame { width: 100%; height: calc(100% - 40px); border: none; background: white; }
-
-        .close-btn { 
-            background: #8b4513; color: #ffd700; padding: 5px 20px;
-            font-family: 'Cinzel'; cursor: pointer; text-align: right; display: block;
-        }
-
-        @keyframes breathe { from { transform: scale(0.9); opacity: 0.7; } to { transform: scale(1.1); opacity: 1; } }
+        @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div class="background-img"></div>
-    <canvas id="cosmicCanvas"></canvas>
-
-    <div class="parva-grid" id="mainGrid"></div>
-
-    <div id="reader">
-        <div class="close-btn" onclick="closeReader()">CLOSE X</div>
-        <iframe id="storyFrame" src=""></iframe>
+    <div id="welcome-screen" onclick="triggerSequence()">
+        <h1 style="font-family:'Cinzel'; color:var(--gold); font-size: 3rem; letter-spacing: 10px;">MAHABHARATA</h1>
+        <div style="border: 1px solid var(--gold); padding: 12px 30px; cursor:pointer; font-family:'Cinzel'; color:var(--gold); margin-top:40px;">ENTER PORTAL</div>
     </div>
 
+    <div id="mantra-screen">
+        <div class="mantra-text">OM NAMO NARAYANAYA</div>
+    </div>
+
+    <audio id="bgMusic" loop>
+        <source src="https://cdn.pixabay.com/audio/2022/05/27/audio_1aad8a1710.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="cosmos-bg" id="bgImg"></div>
+    <canvas id="sparkleCanvas"></canvas>
+
+    <div id="main-ui">
+        <div class="archive-header">
+            <h1>DIVINE ARCHIVE</h1>
+            <p style="font-family:'Philosopher'; letter-spacing: 4px; color: var(--gold); font-size: 0.8rem; margin-top:10px;">SEEK THE ETERNAL TRUTH</p>
+        </div>
+	<div id="search-container" style="margin-bottom: 30px; width: 100%; max-width: 400px; position: relative; display: flex; align-items: center; justify-content: center;">
+    <input type="text" id="parvaSearch" placeholder="Search the scrolls..." onkeyup="filterParvas()" 
+    style="width: 100%; padding: 12px 40px 12px 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(197, 160, 89, 0.3); border-radius: 25px; color: white; font-family: 'Philosopher'; outline: none; text-align: center;">
+    
+    <span id="clearSearch" onclick="clearInput()" 
+    style="position: absolute; right: 15px; cursor: pointer; color: var(--gold); font-family: 'Cinzel'; font-size: 1.2rem; display: none; transition: 0.3s; font-weight: bold;">X</span>
+</div>
+        <div class="parva-container" id="list"></div>
+    </div>
+
+   	<div id="reader">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div id="voiceBtn" onclick="toggleSpeech()" style="cursor:pointer; color:var(--gold); font-family:'Cinzel'; border: 1px solid var(--gold); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; transition: 0.3s;">
+            🔊 Listen to Scroll
+        </div>
+        <div style="text-align:right; cursor:pointer; color:var(--gold); font-family:'Cinzel';" onclick="closeReader()">[ CLOSE ]</div>
+    </div>
+    <h2 id="r-title" style="font-family: 'Cinzel'; color: var(--gold); font-size: 2.2rem; margin-top: 20px; border-bottom: 1px solid #333; padding-bottom: 15px;"></h2>
+    <div id="r-content" style="font-family: 'Philosopher'; line-height: 2.2; color: #eee; margin-top: 30px; font-size: 1.25rem;"></div>
+</div>
+
     <script>
-        // Data mapping for all 18 Parvas with their real links
-        const parvaData = [
-            { name: "Adi Parva", link: "https://vyas-mahabharat.com/the-story-begins/" },
-            { name: "Sabha Parva", link: "https://vyas-mahabharat.com/summary-of-the-18-parvas/" }, // Placeholder for now
-            { name: "Vana Parva", link: "https://vyas-mahabharat.com/" },
-            { name: "Virata Parva", link: "https://vyas-mahabharat.com/" },
-            { name: "Udyoga Parva", link: "https://vyas-mahabharat.com/" },
-            { name: "Bhishma Parva", link: "https://vyas-mahabharat.com/" },
-            { name: "Drona Parva", link: "https://vyas-mahabharat.com/" },
-            { name: "Karna Parva", link: "https://vyas-mahabharat.com/" },
-            { name: "Shalya Parva", link: "https://vyas-mahabharat.com/" },
-            { name: "Sauptika Parva", link: "https://vyas-mahabharat.com/" },
-            { name: "Stri Parva", link: "https://vyas-mahabharat.com/" },
-            { name: "Shanti Parva", link: "https://vyas-mahabharat.com/" },
-            { name: "Anushasana Parva", link: "https://vyas-mahabharat.com/" },
-            { name: "Ashvamedhika Parva", link: "https://vyas-mahabharat.com/" },
-            { name: "Ashramavasika Parva", link: "https://vyas-mahabharat.com/" },
-            { name: "Mausala Parva", link: "https://vyas-mahabharat.com/" },
-            { name: "Mahaprasthanika Parva", link: "https://vyas-mahabharat.com/" },
-            { name: "Svargarohana Parva", link: "https://vyas-mahabharat.com/" }
+	function filterParvas() {
+    let input = document.getElementById('parvaSearch').value.toUpperCase();
+    let rows = document.getElementsByClassName('parva-row');
+    let clearBtn = document.getElementById('clearSearch');
+
+    // Show or hide the 'X' button
+    clearBtn.style.display = (input.length > 0) ? "block" : "none";
+
+    for (let i = 0; i < rows.length; i++) {
+        let name = rows[i].getElementsByClassName('parva-name')[0].innerText;
+        if (name.toUpperCase().indexOf(input) > -1) {
+            rows[i].classList.remove('hidden');
+        } else {
+            rows[i].classList.add('hidden');
+        }
+    }
+}
+
+function clearInput() {
+    document.getElementById('parvaSearch').value = ""; // Clear text
+    filterParvas(); // Reset the list visibility
+}
+		let synth = window.speechSynthesis;
+let utterance = null;
+
+function toggleSpeech() {
+    // If already speaking, stop it
+    if (synth.speaking) {
+        synth.cancel();
+        document.getElementById('voiceBtn').innerText = "🔊 Listen to Scroll";
+        document.getElementById('voiceBtn').style.background = "transparent";
+        return;
+    }
+
+    const title = document.getElementById('r-title').innerText;
+    const content = document.getElementById('r-content').innerText;
+    
+    utterance = new SpeechSynthesisUtterance(`${title}. ${content}`);
+    
+    // Set voice properties for a more "divine/calm" feel
+    utterance.pitch = 0.9; // Slightly deeper
+    utterance.rate = 0.9;  // Slightly slower for clarity
+    
+    // UI Feedback
+    document.getElementById('voiceBtn').innerText = "⏹ Stop Narration";
+    document.getElementById('voiceBtn').style.background = "rgba(197, 160, 89, 0.2)";
+
+    utterance.onend = () => {
+        document.getElementById('voiceBtn').innerText = "🔊 Listen to Scroll";
+        document.getElementById('voiceBtn').style.background = "transparent";
+    };
+
+    synth.speak(utterance);
+}
+
+// Important: Stop speaking if the user closes the reader
+function closeReader() {
+    synth.cancel(); // Stop voice
+    document.getElementById('voiceBtn').innerText = "🔊 Listen to Scroll";
+    document.getElementById('voiceBtn').style.background = "transparent";
+    document.getElementById('reader').style.display = 'none';
+}
+        // JSON format placeholder for local data
+        const localParvaData = {
+    "Adi Parva": {
+        "summary": "The Book of Beginnings",
+        "content": "The Adi Parva marks the origin of the Kuru dynasty. It begins with the Sarpasatra (snake sacrifice) of King Janamejaya and recounts the histories of ancestors like Bharat and Shantanu. It details the birth of Bhishma, the miraculous appearance of the Pandavas and Kauravas, and the early seeds of jealousy. Key events include the escape from the house of lac and Arjuna winning Draupadi in the Swayamvara."
+    },
+    "Sabha Parva": {
+        "summary": "The Book of the Assembly Hall",
+        "content": "In this chapter, the Maya Sabha is constructed for the Pandavas. The narrative follows the Rajasuya Yagna performed by Yudhishthira. The turning point is the fateful game of dice between Yudhishthira and Shakuni, leading to the public humiliation of Draupadi and the commencement of the Pandavas' thirteen-year exile."
+    },
+    "Vana Parva": {
+        "summary": "The Book of the Forest",
+        "content": "This is one of the longest books, detailing the twelve years of forest life. It includes the story of Savitri and Satyavan, Nala and Damayanti, and Arjuna’s journey to the heavens to obtain divine weapons (Astras) from Lord Shiva and Indra. It is a period of deep spiritual growth and preparation for the Pandavas."
+    },
+    "Virata Parva": {
+        "summary": "The Book of Virata",
+        "content": "The final year of exile spent in total disguise at King Virata’s kingdom. Yudhishthira acts as a courtier, Bhima as a cook, and Arjuna as a dance teacher named Brihannala. The book concludes with a massive battle against the Kurus who tried to steal Virata's cattle, revealing the Pandavas' true identities just as the exile ends."
+    },
+    "Udyoga Parva": {
+        "summary": "The Book of Effort",
+        "content": "A book focused on diplomacy and the buildup to war. Both sides gather allies. Lord Krishna makes a final attempt at peace in the Kuru court but is insulted by Duryodhana. Krishna reveals his Vishwaroop (Universal Form) to the assembly. The parva ends with both armies marching to the battlefield of Kurukshetra."
+    },
+    "Bhishma Parva": {
+        "summary": "The Book of Bhishma",
+        "content": "The Great War begins. On the first day, Arjuna is paralyzed by grief, leading to Lord Krishna delivering the **Bhagavad Gita**. The book covers the first ten days of the war under the command of Bhishma. It ends with Bhishma being placed on a bed of arrows by Arjuna, choosing his own time of death."
+    },
+    "Drona Parva": {
+        "summary": "The Book of Drona",
+        "content": "Dronacharya takes command. This book is marked by the formation of the Chakravyuha and the heroic but tragic death of Arjuna’s son, Abhimanyu. It details five days of intense warfare and ends with the death of Drona through a tactical deception involving the news of Ashwatthama’s death."
+    },
+    "Karna Parva": {
+        "summary": "The Book of Karna",
+        "content": "Karna finally takes command of the Kaurava army. The rivalry between Karna and Arjuna reaches its peak. On the second day of his command, Karna’s chariot wheel gets stuck in the mud due to an old curse. While he tries to lift it, Arjuna—urged by Krishna—strikes the final blow, ending the life of the great warrior."
+    },
+    "Shalya Parva": {
+        "summary": "The Book of Shalya",
+        "content": "The 18th and final day of the war. Shalya is the commander and is killed by Yudhishthira. Duryodhana, the sole survivor, flees to a lake. He is discovered and engaged in a final mace duel with Bhima. Bhima breaks Duryodhana’s thighs, effectively ending the war."
+    },
+    "Sauptika Parva": {
+        "summary": "The Book of the Sleeping Warriors",
+        "content": "A dark chapter where Ashwatthama, driven by revenge, sneaks into the Pandava camp at night. He kills the five sons of the Pandavas and Dhrishtadyumna while they sleep. The Pandavas, who were away with Krishna, return to find their lineage nearly extinguished."
+    },
+    "Stri Parva": {
+        "summary": "The Book of the Women",
+        "content": "The aftermath of the war seen through the eyes of the widows. Gandhari, Dhritarashtra, and the Pandava mothers visit the battlefield. Gandhari, overcome with grief for her 100 sons, curses Krishna, predicting that his own Yadava clan will perish in a similar internal conflict."
+    },
+    "Shanti Parva": {
+        "summary": "The Book of Peace",
+        "content": "Yudhishthira is crowned king but is filled with remorse. He visits Bhishma, who is still on his bed of arrows. Bhishma delivers a massive discourse on Dharma, the duties of a king (Rajadharma), and the path to Moksha (liberation). It is the most philosophical section of the epic."
+    },
+    "Anushasana Parva": {
+        "summary": "The Book of Instructions",
+        "content": "A continuation of Bhishma’s final teachings. It covers specific rules for society, the importance of charity, and the Vishnu Sahasranama (thousand names of Vishnu). The book ends with Bhishma finally leaving his mortal body during the auspicious Uttarayana."
+    },
+    "Ashvamedhika": {
+        "summary": "The Book of the Horse Sacrifice",
+        "content": "To atone for the sins of war and establish his empire, Yudhishthira performs the Ashvamedha Yagna. Arjuna follows the sacrificial horse across various kingdoms, battling those who challenge it. The ritual successfully restores prosperity to the land."
+    },
+    "Ashramavasika": {
+        "summary": "The Book of the Hermitage",
+        "content": "Fifteen years after the war, the elders—Dhritarashtra, Gandhari, and Kunti—decide to retire to the forest to live as ascetics. They eventually perish in a forest fire, peacefully accepting their end as part of the natural cycle of life."
+    },
+    "Mausala Parva": {
+        "summary": "The Book of the Clubs",
+        "content": "Thirty-six years after the war, Gandhari’s curse comes true. The Yadavas become arrogant and kill each other in a drunken brawl using iron clubs. Balarama and Krishna realize their time on Earth is over and depart, leaving Dwarka to be swallowed by the sea."
+    },
+    "Mahaprasthanika": {
+        "summary": "The Book of the Great Journey",
+        "content": "The Pandavas and Draupadi renounce their kingdom. They begin a final pilgrimage towards the Himalayas to reach heaven. One by one, they fall—except for Yudhishthira, who is followed by a mysterious dog (Dharma in disguise) all the way to the celestial gates."
+    },
+    "Svargarohana": {
+        "summary": "The Book of the Ascent to Heaven",
+        "content": "Yudhishthira reaches heaven but is shocked to see his enemies there and his brothers in a dark place. It is revealed as a final illusion to test his loyalty. Once he passes, all the heroes of the war are seen in their true celestial forms, free from earthly hatred and pain."
+    }
+};
+
+        const parvas = [
+            { name: "Adi Parva", summary: "The Book of Beginnings" },
+            { name: "Sabha Parva", summary: "The Book of the Assembly Hall" },
+            { name: "Vana Parva", summary: "The Book of the Forest" },
+            { name: "Virata Parva", summary: "The Book of Virata" },
+            { name: "Udyoga Parva", summary: "The Book of Effort" },
+            { name: "Bhishma Parva", summary: "The Book of Bhishma" },
+            { name: "Drona Parva", summary: "The Book of Drona" },
+            { name: "Karna Parva", summary: "The Book of Karna" },
+            { name: "Shalya Parva", summary: "The Book of Shalya" },
+            { name: "Sauptika Parva", summary: "The Book of the Sleeping Warriors" },
+            { name: "Stri Parva", summary: "The Book of the Women" },
+            { name: "Shanti Parva", summary: "The Book of Peace" },
+            { name: "Anushasana Parva", summary: "The Book of Instructions" },
+            { name: "Ashvamedhika", summary: "The Book of the Horse Sacrifice" },
+            { name: "Ashramavasika", summary: "The Book of the Hermitage" },
+            { name: "Mausala", summary: "The Book of the Clubs" },
+            { name: "Mahaprasthanika", summary: "The Book of the Great Journey" },
+            { name: "Svargarohana", summary: "The Book of the Ascent to Heaven" }
         ];
 
-        const grid = document.getElementById('mainGrid');
+        function triggerSequence() {
+            document.getElementById('welcome-screen').style.opacity = '0';
+            const music = document.getElementById('bgMusic');
+            music.volume = 0.08;
+            music.play();
 
-        // Generate the 18 cosmic nodes
-        parvaData.forEach((item) => {
-            const div = document.createElement('div');
-            div.className = 'node';
-            div.onclick = () => openReader(item.link);
-            div.innerHTML = `<div class="orb"></div><span>${item.name}</span>`;
-            grid.appendChild(div);
-        });
+            setTimeout(() => {
+                document.getElementById('welcome-screen').style.display = 'none';
+                const mantra = document.getElementById('mantra-screen');
+                mantra.style.display = 'flex';
+                
+                setTimeout(() => {
+                    mantra.style.opacity = '0';
+                    setTimeout(() => {
+                        mantra.style.display = 'none';
+                        document.getElementById('bgImg').style.opacity = '1';
+                        document.getElementById('main-ui').style.opacity = '1';
+                        initList();
+                    }, 1500);
+                }, 3500);
+            }, 1000);
+        }
 
-        function openReader(url) {
-            document.getElementById('storyFrame').src = url;
+        function initList() {
+            const container = document.getElementById('list');
+            parvas.forEach((p) => {
+                const row = document.createElement('div');
+                row.className = 'parva-row';
+                row.innerHTML = `<span class="parva-name">${p.name}</span><span class="parva-summary">${p.summary}</span>`;
+                row.onclick = () => openReader(p.name);
+                container.appendChild(row);
+            });
+        }
+
+        function openReader(name) {
+            document.getElementById('r-title').innerText = name;
+            if(localParvaData[name]) {
+                document.getElementById('r-content').innerText = localParvaData[name].content;
+            } else {
+                document.getElementById('r-content').innerHTML = `<p style="color:var(--gold)">Tracing cosmic records...</p><p>This parva's content is currently being inscribed into the digital archive.</p>`;
+            }
             document.getElementById('reader').style.display = 'block';
         }
 
-        function closeReader() {
-            document.getElementById('reader').style.display = 'none';
-            document.getElementById('storyFrame').src = "";
-        }
+        function closeReader() { document.getElementById('reader').style.display = 'none'; }
 
-        // --- COSMIC DUST CANVAS CODE ---
-        const canvas = document.getElementById('cosmicCanvas');
+        // Sparkle trail
+        const canvas = document.getElementById('sparkleCanvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
-        function init() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-        window.addEventListener('resize', init);
-        init();
-
-        class Particle {
-            constructor(x, y) {
-                this.x = x; this.y = y;
-                this.size = Math.random() * 3 + 1;
-                this.speedX = Math.random() * 2 - 1;
-                this.speedY = Math.random() * 2 - 1;
-                this.color = '#ffd700';
-            }
-            update() { this.x += this.speedX; this.y += this.speedY; if(this.size > 0.1) this.size -= 0.05; }
-            draw() { ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI*2); ctx.fill(); }
-        }
-
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.onresize = resize; resize();
         window.addEventListener('mousemove', (e) => {
-            for(let i=0; i<3; i++) particles.push(new Particle(e.x, e.y));
+            for(let i=0; i<5; i++) particles.push({ x: e.clientX, y: e.clientY, sx: (Math.random()-0.5)*2, sy: (Math.random()-0.5)*2, age: 1 });
         });
-
         function animate() {
             ctx.clearRect(0,0,canvas.width, canvas.height);
             particles.forEach((p, i) => {
-                p.update(); p.draw();
-                if(p.size <= 0.1) particles.splice(i, 1);
+                p.x += p.sx; p.y += p.sy; p.age -= 0.015;
+                if(p.age <= 0) particles.splice(i, 1);
+                ctx.fillStyle = `rgba(255, 215, 0, ${p.age})`;
+                ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2); ctx.fill();
             });
             requestAnimationFrame(animate);
         }
